@@ -10,8 +10,14 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "express": "^4.21.1",
     "nuxt": "^3.14.159",
+    "pg": "^8.13.1",
     "vue": "latest",
     "vue-router": "latest"
+  },
+  "devDependencies": {
+    "@iconify-json/mdi": "^1.2.1",
+    "@nuxt/icon": "^1.7.5"
   }
 }
