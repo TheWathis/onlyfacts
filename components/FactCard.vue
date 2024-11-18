@@ -103,11 +103,15 @@ function formatDate(dateString) {
     padding: 20px;
     margin: 10px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    min-height: 200px; /* Match the height of AddFactCard */
 }
 
 .fact-text {
     font-size: 1.1em;
     margin-bottom: 15px;
+    flex: 1; /* This will push the meta section to the bottom */
 }
 
 .fact-meta {
@@ -116,6 +120,7 @@ function formatDate(dateString) {
     align-items: center;
     color: #666;
     font-size: 0.9em;
+    margin-top: auto; /* Ensures it stays at the bottom */
 }
 
 .vote-buttons {

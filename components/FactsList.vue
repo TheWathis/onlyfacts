@@ -1,17 +1,26 @@
 <template>
     <div class="facts-list">
+        <AddFactCard @factAdded="onFactAdded" />
         <FactCard v-for="fact in facts" :key="fact.id" :fact="fact" />
     </div>
 </template>
 
 <script setup>
-defineProps({
+import AddFactCard from "./AddFactCard.vue";
+
+const props = defineProps({
     facts: {
         type: Array,
         required: true,
         default: () => [],
     },
 });
+
+const emit = defineEmits(["update:facts"]);
+
+const onFactAdded = (newFact) => {
+    emit("update:facts", [newFact, ...props.facts]);
+};
 </script>
 
 <style scoped>
