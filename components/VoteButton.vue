@@ -32,6 +32,8 @@ const iconName = computed(() =>
 
 <style scoped>
 .vote-btn {
+    --upvote-color: #2ecc71;
+    --downvote-color: #e74c3c;
     display: flex;
     align-items: center;
     gap: 5px;

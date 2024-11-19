@@ -58,8 +58,6 @@ function formatDate(dateString) {
 
 <style scoped>
 .fact-card {
-    --upvote-color: #2ecc71;
-    --downvote-color: #e74c3c;
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 20px;
