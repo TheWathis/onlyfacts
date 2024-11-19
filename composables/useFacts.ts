@@ -2,6 +2,14 @@ export const useFacts = () => {
   const config = useRuntimeConfig();
   const baseURL = config.public.apiBase;
 
+  const defaultErrorFact = {
+    id: -1,
+    fact: "Sorry, our fact server seems to be down at the moment. Please try again later!",
+    upvotes: 0,
+    downvotes: 0,
+    created_at: new Date().toISOString()
+  };
+
   const getAllFacts = async () => {
     try {
       const facts = await $fetch(`${baseURL}/facts`);
@@ -18,11 +26,11 @@ export const useFacts = () => {
       return fact;
     } catch (error) {
       console.error("Error fetching random fact:", error);
-      return null;
+      return defaultErrorFact;
     }
   };
 
-  const upvoteFact = async (id) => {
+  const upvoteFact = async (id: number) => {
     try {
       const updatedFact = await $fetch(`${baseURL}/facts/${id}/upvote`, {
         method: "POST",
@@ -34,7 +42,7 @@ export const useFacts = () => {
     }
   };
 
-  const downvoteFact = async (id) => {
+  const downvoteFact = async (id: number) => {
     try {
       const updatedFact = await $fetch(`${baseURL}/facts/${id}/downvote`, {
         method: "POST",
@@ -46,7 +54,7 @@ export const useFacts = () => {
     }
   };
 
-  const createFact = async (factContent) => {
+  const createFact = async (factContent: string) => {
     try {
       const newFact = await $fetch(`${baseURL}/facts`, {
         method: "POST",

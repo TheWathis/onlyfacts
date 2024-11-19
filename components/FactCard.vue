@@ -7,7 +7,7 @@
                     @click="vote('upvote')"
                     class="vote-btn upvote"
                     :class="{ active: hasVoted === 'upvote' }"
-                    :disabled="hasVoted"
+                    :disabled="hasVoted || fact.id === -1"
                 >
                     <Icon name="mdi:thumb-up" />
                     <span>{{ fact.upvotes }}</span>
@@ -16,7 +16,7 @@
                     @click="vote('downvote')"
                     class="vote-btn downvote"
                     :class="{ active: hasVoted === 'downvote' }"
-                    :disabled="hasVoted"
+                    :disabled="hasVoted || fact.id === -1"
                 >
                     <Icon name="mdi:thumb-down" />
                     <span>{{ fact.downvotes }}</span>
@@ -180,21 +180,24 @@ function formatDate(dateString) {
     transform: none;
 }
 
-.vote-btn:disabled:hover {
-    transform: none;
+.vote-btn.upvote:disabled:hover {
+    background-color: #f5f5f5; /* Keep original background */
+    color: var(--upvote-color); /* Keep original text color */
+}
+.vote-btn.downvote:disabled:hover {
+    background-color: #f5f5f5; /* Keep original background */
+    color: var(--downvote-color); /* Keep original text color */
 }
 
 .vote-btn.upvote.active:disabled {
     opacity: 1;
     background-color: var(--upvote-color);
-    color: white;
-    cursor: not-allowed;
+    color: white !important;
 }
 
 .vote-btn.downvote.active:disabled {
     opacity: 1;
     background-color: var(--downvote-color);
-    color: white;
-    cursor: not-allowed;
+    color: white !important;
 }
 </style>
