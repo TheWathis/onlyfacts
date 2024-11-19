@@ -3,24 +3,22 @@
         <p class="fact-text">{{ fact.fact }}</p>
         <div class="fact-meta">
             <div class="vote-buttons">
-                <button
-                    @click="vote('upvote')"
-                    class="vote-btn upvote"
-                    :class="{ active: hasVoted === 'upvote' }"
-                    :disabled="fact.id === -1 || isVoting"
-                >
-                    <Icon name="mdi:thumb-up" />
-                    <span>{{ fact.upvotes }}</span>
-                </button>
-                <button
-                    @click="vote('downvote')"
-                    class="vote-btn downvote"
-                    :class="{ active: hasVoted === 'downvote' }"
-                    :disabled="fact.id === -1 || isVoting"
-                >
-                    <Icon name="mdi:thumb-down" />
-                    <span>{{ fact.downvotes }}</span>
-                </button>
+                <VoteButton
+                    type="upvote"
+                    :isActive="hasVoted === 'upvote'"
+                    :disabled="fact.id === -1"
+                    :isVoting="isVoting"
+                    :count="fact.upvotes"
+                    @vote="vote('upvote')"
+                />
+                <VoteButton
+                    type="downvote"
+                    :isActive="hasVoted === 'downvote'"
+                    :disabled="fact.id === -1"
+                    :isVoting="isVoting"
+                    :count="fact.downvotes"
+                    @vote="vote('downvote')"
+                />
             </div>
             <span class="fact-date">{{ formatDate(fact.created_at) }}</span>
         </div>
@@ -28,7 +26,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref } from "vue";
+import { useVoting } from "../composables/useVoting";
+import VoteButton from "./VoteButton.vue";
 
 const props = defineProps({
     fact: {
@@ -38,103 +38,16 @@ const props = defineProps({
 });
 
 const fact = ref(props.fact);
-const hasVoted = ref(null);
-const userId = ref(null);
-const isVoting = ref(false);
-
-onMounted(async () => {
-    // Initialize userId
-    let storedUserId = localStorage.getItem("userId");
-    if (!storedUserId) {
-        storedUserId = "user_" + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem("userId", storedUserId);
-    }
-    userId.value = storedUserId;
-
-    // Check if user has already voted on this fact
-    const voted = localStorage.getItem(`fact_vote_${fact.value.id}`);
-    if (voted) {
-        hasVoted.value = voted;
-    }
-});
+const { hasVoted, isVoting, handleVote } = useVoting(fact.value.id);
 
 async function vote(voteType) {
-    if (isVoting.value) return;
-    isVoting.value = true;
-
     try {
-        // If already voted, remove the previous vote first
-        if (hasVoted.value) {
-            // If trying to vote the same way again, just remove the vote
-            if (hasVoted.value === voteType) {
-                const removeVoteResponse = await fetch(
-                    `/api/facts/${fact.value.id}/remove-vote`,
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                            userId: userId.value,
-                            voteType: hasVoted.value,
-                        }),
-                    },
-                );
-
-                if (!removeVoteResponse.ok) {
-                    const error = await removeVoteResponse.json();
-                    throw new Error(error.message);
-                }
-
-                const updatedFact = await removeVoteResponse.json();
-                fact.value = { ...fact.value, ...updatedFact };
-                hasVoted.value = null;
-                localStorage.removeItem(`fact_vote_${fact.value.id}`);
-                isVoting.value = false;
-                return;
-            }
-
-            // Remove previous vote
-            await fetch(`/api/facts/${fact.value.id}/remove-vote`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    userId: userId.value,
-                    voteType: hasVoted.value,
-                }),
-            });
+        const updatedFact = await handleVote(voteType, fact.value);
+        if (updatedFact) {
+            fact.value = updatedFact;
         }
-
-        // Add new vote
-        const response = await fetch(
-            `/api/facts/${fact.value.id}/${voteType}`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    userId: userId.value,
-                }),
-            },
-        );
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message);
-        }
-
-        const updatedFact = await response.json();
-        fact.value = { ...fact.value, ...updatedFact };
-        hasVoted.value = voteType;
-        localStorage.setItem(`fact_vote_${fact.value.id}`, voteType);
     } catch (error) {
-        console.error("Error voting:", error);
-        // Add user feedback here if needed
-    } finally {
-        isVoting.value = false;
+        // Handle error (maybe show a notification)
     }
 }
 
@@ -154,13 +67,13 @@ function formatDate(dateString) {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    min-height: 200px; /* Match the height of AddFactCard */
+    min-height: 200px;
 }
 
 .fact-text {
     font-size: 1.1em;
     margin-bottom: 15px;
-    flex: 1; /* This will push the meta section to the bottom */
+    flex: 1;
 }
 
 .fact-meta {
@@ -169,7 +82,7 @@ function formatDate(dateString) {
     align-items: center;
     color: #666;
     font-size: 0.9em;
-    margin-top: auto; /* Ensures it stays at the bottom */
+    margin-top: auto;
 }
 
 .vote-buttons {
@@ -177,72 +90,7 @@ function formatDate(dateString) {
     gap: 10px;
 }
 
-.vote-btn {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 8px 12px;
-    border: none;
-    border-radius: 4px;
-    background-color: #f5f5f5;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.9em;
-}
-
-.vote-btn.upvote {
-    color: var(--upvote-color);
-}
-
-.vote-btn.upvote:hover,
-.vote-btn.upvote.active {
-    background-color: var(--upvote-color);
-    color: white;
-}
-
-.vote-btn.downvote {
-    color: var(--downvote-color);
-}
-
-.vote-btn.downvote:hover,
-.vote-btn.downvote.active {
-    background-color: var(--downvote-color);
-    color: white;
-}
-
-.vote-btn .icon {
-    width: 20px;
-    height: 20px;
-}
-
 .fact-date {
     font-style: italic;
-}
-
-.vote-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.vote-btn.upvote:disabled:hover {
-    background-color: #f5f5f5; /* Keep original background */
-    color: var(--upvote-color); /* Keep original text color */
-}
-.vote-btn.downvote:disabled:hover {
-    background-color: #f5f5f5; /* Keep original background */
-    color: var(--downvote-color); /* Keep original text color */
-}
-
-.vote-btn.upvote.active:disabled {
-    opacity: 1;
-    background-color: var(--upvote-color);
-    color: white !important;
-}
-
-.vote-btn.downvote.active:disabled {
-    opacity: 1;
-    background-color: var(--downvote-color);
-    color: white !important;
 }
 </style>

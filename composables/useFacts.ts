@@ -7,65 +7,36 @@ export const useFacts = () => {
     fact: "Sorry, our fact server seems to be down at the moment. Please try again later!",
     upvotes: 0,
     downvotes: 0,
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
   };
 
-  const getAllFacts = async () => {
+  const fetchWithError = async (url: string, options = {}) => {
     try {
-      const facts = await $fetch(`${baseURL}/facts`);
-      return facts;
+      return await $fetch(url, options);
     } catch (error) {
-      console.error("Error fetching facts:", error);
-      return [];
-    }
-  };
-
-  const getRandomFact = async () => {
-    try {
-      const fact = await $fetch(`${baseURL}/random`);
-      return fact;
-    } catch (error) {
-      console.error("Error fetching random fact:", error);
-      return defaultErrorFact;
-    }
-  };
-
-  const upvoteFact = async (id: number) => {
-    try {
-      const updatedFact = await $fetch(`${baseURL}/facts/${id}/upvote`, {
-        method: "POST",
-      });
-      return updatedFact;
-    } catch (error) {
-      console.error("Error upvoting fact:", error);
+      console.error(`Error fetching ${url}:`, error);
       return null;
     }
   };
 
-  const downvoteFact = async (id: number) => {
-    try {
-      const updatedFact = await $fetch(`${baseURL}/facts/${id}/downvote`, {
-        method: "POST",
-      });
-      return updatedFact;
-    } catch (error) {
-      console.error("Error downvoting fact:", error);
-      return null;
-    }
-  };
+  const getAllFacts = () => fetchWithError(`${baseURL}/facts`) || [];
 
-  const createFact = async (factContent: string) => {
-    try {
-      const newFact = await $fetch(`${baseURL}/facts`, {
-        method: "POST",
-        body: { fact: factContent },
-      });
-      return newFact;
-    } catch (error) {
-      console.error("Error creating fact:", error);
-      return null;
-    }
-  };
+  const getRandomFact = async () =>
+    (await fetchWithError(`${baseURL}/random`)) || defaultErrorFact;
+
+  const voteFact = (id: number, voteType: "upvote" | "downvote") =>
+    fetchWithError(`${baseURL}/facts/${id}/${voteType}`, {
+      method: "POST",
+    });
+
+  const upvoteFact = (id: number) => voteFact(id, "upvote");
+  const downvoteFact = (id: number) => voteFact(id, "downvote");
+
+  const createFact = (factContent: string) =>
+    fetchWithError(`${baseURL}/facts`, {
+      method: "POST",
+      body: { fact: factContent },
+    });
 
   return {
     getAllFacts,
