@@ -1,8 +1,6 @@
 <template>
     <div class="app-container">
-        <header>
-            <NavBar />
-        </header>
+        <NavBar />
 
         <main>
             <NuxtPage />
@@ -15,7 +13,6 @@
 </template>
 
 <style>
-/* Reset default margin and padding */
 body,
 html {
     margin: 0;
@@ -30,10 +27,11 @@ html {
 }
 
 main {
-    flex: 1; /* This makes the main content area grow to fill available space */
+    flex: 1;
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+    margin-top: 80px; /* Add this line to create space below the fixed navbar */
 }
 
 footer {
