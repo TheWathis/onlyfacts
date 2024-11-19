@@ -7,7 +7,7 @@
                     @click="vote('upvote')"
                     class="vote-btn upvote"
                     :class="{ active: hasVoted === 'upvote' }"
-                    :disabled="hasVoted || fact.id === -1"
+                    :disabled="fact.id === -1 || isVoting"
                 >
                     <Icon name="mdi:thumb-up" />
                     <span>{{ fact.upvotes }}</span>
@@ -16,7 +16,7 @@
                     @click="vote('downvote')"
                     class="vote-btn downvote"
                     :class="{ active: hasVoted === 'downvote' }"
-                    :disabled="hasVoted || fact.id === -1"
+                    :disabled="fact.id === -1 || isVoting"
                 >
                     <Icon name="mdi:thumb-down" />
                     <span>{{ fact.downvotes }}</span>
@@ -40,6 +40,7 @@ const props = defineProps({
 const fact = ref(props.fact);
 const hasVoted = ref(null);
 const userId = ref(null);
+const isVoting = ref(false);
 
 onMounted(async () => {
     // Initialize userId
@@ -58,9 +59,55 @@ onMounted(async () => {
 });
 
 async function vote(voteType) {
-    if (hasVoted.value) return;
+    if (isVoting.value) return;
+    isVoting.value = true;
 
     try {
+        // If already voted, remove the previous vote first
+        if (hasVoted.value) {
+            // If trying to vote the same way again, just remove the vote
+            if (hasVoted.value === voteType) {
+                const removeVoteResponse = await fetch(
+                    `/api/facts/${fact.value.id}/remove-vote`,
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            userId: userId.value,
+                            voteType: hasVoted.value,
+                        }),
+                    },
+                );
+
+                if (!removeVoteResponse.ok) {
+                    const error = await removeVoteResponse.json();
+                    throw new Error(error.message);
+                }
+
+                const updatedFact = await removeVoteResponse.json();
+                fact.value = { ...fact.value, ...updatedFact };
+                hasVoted.value = null;
+                localStorage.removeItem(`fact_vote_${fact.value.id}`);
+                isVoting.value = false;
+                return;
+            }
+
+            // Remove previous vote
+            await fetch(`/api/facts/${fact.value.id}/remove-vote`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    userId: userId.value,
+                    voteType: hasVoted.value,
+                }),
+            });
+        }
+
+        // Add new vote
         const response = await fetch(
             `/api/facts/${fact.value.id}/${voteType}`,
             {
@@ -86,6 +133,8 @@ async function vote(voteType) {
     } catch (error) {
         console.error("Error voting:", error);
         // Add user feedback here if needed
+    } finally {
+        isVoting.value = false;
     }
 }
 
@@ -139,10 +188,6 @@ function formatDate(dateString) {
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.9em;
-}
-
-.vote-btn:hover {
-    transform: translateY(-1px);
 }
 
 .vote-btn.upvote {
