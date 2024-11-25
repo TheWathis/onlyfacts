@@ -1,16 +1,29 @@
 <template>
     <div class="app-container">
         <NavBar />
-
         <main>
             <NuxtPage />
         </main>
-
         <footer>
             <p>© 2024 WathisCorp</p>
         </footer>
     </div>
 </template>
+
+<script setup>
+import NavBar from "~/components/layout/NavBar.vue";
+import { onMounted } from "vue";
+import { useAuth } from "~/composables/useAuth";
+
+const auth = useAuth();
+
+// Only check auth on client side
+if (process.client) {
+    onMounted(async () => {
+        await auth.checkAuth();
+    });
+}
+</script>
 
 <style>
 body,

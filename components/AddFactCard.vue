@@ -98,8 +98,7 @@ const submitFact = async () => {
 }
 
 .add-fact-card:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #2ecc71;
 }
 
 .add-icon {
@@ -169,13 +168,5 @@ button {
 .cancel-button {
     background-color: #e74c3c;
     color: white;
-}
-
-button:hover:not(:disabled) {
-    transform: translateY(-1px);
-}
-
-button:disabled:hover {
-    transform: none;
 }
 </style>

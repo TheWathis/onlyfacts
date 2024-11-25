@@ -1,29 +1,28 @@
-import { ref, watch } from "vue";
+import { ref } from "vue";
 
 export const useVoting = (factId: number) => {
-  const userId = ref<string | null>(null);
   const hasVoted = ref<string | null>(null);
   const isVoting = ref(false);
 
-  const initializeUserId = () => {
-    let storedUserId = localStorage.getItem("userId");
-    if (!storedUserId) {
-      storedUserId = "user_" + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem("userId", storedUserId);
-    }
-    userId.value = storedUserId;
-  };
+  // Initial check for user's vote
+  const checkExistingVote = async () => {
+    try {
+      const token = localStorage.getItem("auth_token");
+      if (!token || factId === -1) return;
 
-  const checkExistingVote = (id: number) => {
-    const voted = localStorage.getItem(`fact_vote_${id}`);
-    if (voted) {
-      hasVoted.value = voted;
-    }
-  };
+      const response = await fetch(`/api/facts/${factId}/vote`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-  const resetVoting = (newFactId: number) => {
-    hasVoted.value = null;
-    checkExistingVote(newFactId);
+      if (response.ok) {
+        const { vote_type } = await response.json();
+        hasVoted.value = vote_type;
+      }
+    } catch (error) {
+      console.error("Error checking vote:", error);
+    }
   };
 
   const handleVote = async (voteType: string, fact: any) => {
@@ -31,45 +30,39 @@ export const useVoting = (factId: number) => {
     isVoting.value = true;
 
     try {
-      if (hasVoted.value) {
-        if (hasVoted.value === voteType) {
-          const removeVoteResponse = await fetch(
-            `/api/facts/${fact.id}/remove-vote`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                userId: userId.value,
-                voteType: hasVoted.value,
-              }),
-            },
-          );
+      const token = localStorage.getItem("auth_token");
+      if (!token) {
+        throw new Error("Not authenticated");
+      }
 
-          if (!removeVoteResponse.ok) {
-            const error = await removeVoteResponse.json();
-            throw new Error(error.message);
-          }
+      let endpoint;
+      if (hasVoted.value === voteType) {
+        // Send the current vote type when removing
+        const response = await fetch(`/api/facts/${fact.id}/remove-vote`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ voteType: hasVoted.value }),
+        });
 
-          const updatedFact = await removeVoteResponse.json();
-          hasVoted.value = null;
-          localStorage.removeItem(`fact_vote_${fact.id}`);
-          return updatedFact;
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message);
         }
 
-        await fetch(`/api/facts/${fact.id}/remove-vote`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: userId.value,
-            voteType: hasVoted.value,
-          }),
-        });
+        const updatedFact = await response.json();
+        hasVoted.value = null;
+        return updatedFact;
       }
 
       const response = await fetch(`/api/facts/${fact.id}/${voteType}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: userId.value }),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
@@ -78,8 +71,7 @@ export const useVoting = (factId: number) => {
       }
 
       const updatedFact = await response.json();
-      hasVoted.value = voteType;
-      localStorage.setItem(`fact_vote_${fact.id}`, voteType);
+      hasVoted.value = hasVoted.value === voteType ? null : voteType;
       return updatedFact;
     } catch (error) {
       console.error("Error voting:", error);
@@ -89,17 +81,14 @@ export const useVoting = (factId: number) => {
     }
   };
 
-  // Initialize on creation
-  initializeUserId();
+  // Check existing vote when component mounts
   if (factId && factId !== -1) {
-    checkExistingVote(factId);
+    checkExistingVote();
   }
 
   return {
-    userId,
     hasVoted,
     isVoting,
     handleVote,
-    resetVoting,
   };
 };
