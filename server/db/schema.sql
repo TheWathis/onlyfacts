@@ -7,6 +7,7 @@ CREATE TABLE users (
 
 CREATE TABLE facts (
     id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
     fact TEXT NOT NULL,
     upvotes INTEGER DEFAULT 0,
     downvotes INTEGER DEFAULT 0,
@@ -19,5 +20,13 @@ CREATE TABLE fact_votes (
     user_id INTEGER REFERENCES users(id);
     vote_type VARCHAR(10), -- 'upvote' or 'downvote'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(fact_id, user_id) -- Prevents multiple votes from same user on same fact
+    UNIQUE(fact_id, user_id)
+);
+
+CREATE TABLE fact_views (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    fact_id INTEGER REFERENCES facts(id),
+    viewed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, fact_id)
 );

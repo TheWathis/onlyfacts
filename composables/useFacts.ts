@@ -21,8 +21,20 @@ export const useFacts = () => {
 
   const getAllFacts = () => fetchWithError(`${baseURL}/facts`) || [];
 
-  const getRandomFact = async () =>
-    (await fetchWithError(`${baseURL}/random`)) || defaultErrorFact;
+  const getRandomFact = async () => {
+    const token = localStorage.getItem("auth_token");
+    const headers: Record<string, string> = {};
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    return (
+      (await fetchWithError(`${baseURL}/random`, {
+        headers,
+      })) || defaultErrorFact
+    );
+  };
 
   const voteFact = (id: number, voteType: "upvote" | "downvote") =>
     fetchWithError(`${baseURL}/facts/${id}/${voteType}`, {

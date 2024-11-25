@@ -19,9 +19,13 @@
 
                 <!-- Show either Login or Username + Logout -->
                 <template v-if="auth.state.isAuthenticated">
-                    <span class="username">{{
-                        auth.state.user?.username
-                    }}</span>
+                    <NuxtLink
+                        v-if="auth.state.isAuthenticated"
+                        to="/profile"
+                        class="nav-link"
+                    >
+                        {{ auth.state.user?.username }}
+                    </NuxtLink>
                     <button @click="handleLogout" class="logout-btn">
                         Logout
                     </button>
