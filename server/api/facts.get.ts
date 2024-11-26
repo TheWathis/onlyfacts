@@ -2,9 +2,7 @@ import pool from "../db";
 
 export default defineEventHandler(async (event) => {
   try {
-    const result = await pool.query(
-      "SELECT * FROM facts ORDER BY created_at DESC",
-    );
+    const result = await pool.query("SELECT * FROM facts ORDER BY id DESC");
     return result.rows;
   } catch (error) {
     console.error("Database error:", error);
