@@ -8,6 +8,27 @@
                     <span class="quote-mark">"</span>
                 </div>
                 <div class="fact-actions">
+                    <!-- Add vote buttons -->
+                    <div class="vote-buttons" v-if="auth.state.isAuthenticated">
+                        <button
+                            @click="vote('upvote')"
+                            class="vote-button upvote"
+                            :class="{ active: hasVoted === 'upvote' }"
+                            :disabled="isVoting"
+                        >
+                            <Icon name="mdi:thumb-up" />
+                            <span>{{ fact?.upvotes }}</span>
+                        </button>
+                        <button
+                            @click="vote('downvote')"
+                            class="vote-button downvote"
+                            :class="{ active: hasVoted === 'downvote' }"
+                            :disabled="isVoting"
+                        >
+                            <Icon name="mdi:thumb-down" />
+                            <span>{{ fact?.downvotes }}</span>
+                        </button>
+                    </div>
                     <button class="random-button" @click="loadNewFact">
                         Random Fact
                     </button>
@@ -18,17 +39,116 @@
 </template>
 
 <script setup>
-import { ref } from "vue"; // Add watch import
+import { ref, watch } from "vue";
+import { useAuth } from "~/composables/useAuth";
+import { useVoting } from "~/composables/useVoting";
 
 const { getRandomFact } = useFacts();
 const fact = ref(null);
 const isLoading = ref(true);
+const auth = useAuth();
+
+// Voting state
+const hasVoted = ref(null);
+const isVoting = ref(false);
+
+// Check existing vote when fact changes
+async function checkExistingVote() {
+    if (!fact.value?.id || !auth.state.isAuthenticated) return;
+
+    try {
+        const response = await fetch(`/api/facts/${fact.value.id}/vote`, {
+            headers: {
+                Authorization: `Bearer ${localStorage.getItem("auth_token")}`,
+            },
+        });
+
+        if (response.ok) {
+            const { vote_type } = await response.json();
+            hasVoted.value = vote_type;
+        }
+    } catch (error) {
+        console.error("Error checking vote:", error);
+    }
+}
 
 async function loadNewFact() {
     isLoading.value = true;
     fact.value = await getRandomFact();
+    await checkExistingVote(); // Check for existing vote when loading new fact
     isLoading.value = false;
 }
+
+async function vote(voteType) {
+    if (isVoting.value) return;
+    isVoting.value = true;
+
+    try {
+        const token = localStorage.getItem("auth_token");
+        if (!token) {
+            throw new Error("Not authenticated");
+        }
+
+        let endpoint;
+        if (hasVoted.value === voteType) {
+            // Remove vote
+            const response = await fetch(
+                `/api/facts/${fact.value.id}/remove-vote`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ voteType: hasVoted.value }),
+                },
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to remove vote");
+            }
+
+            const updatedFact = await response.json();
+            fact.value = updatedFact;
+            hasVoted.value = null;
+        } else {
+            // Add or change vote
+            const response = await fetch(
+                `/api/facts/${fact.value.id}/${voteType}`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                },
+            );
+
+            if (!response.ok) {
+                throw new Error("Failed to vote");
+            }
+
+            const updatedFact = await response.json();
+            fact.value = updatedFact;
+            hasVoted.value = voteType;
+        }
+    } catch (error) {
+        console.error("Error voting:", error);
+    } finally {
+        isVoting.value = false;
+    }
+}
+
+// Watch for auth state changes
+watch(
+    () => auth.state.isAuthenticated,
+    (isAuthenticated) => {
+        if (isAuthenticated && fact.value) {
+            checkExistingVote();
+        } else {
+            hasVoted.value = null;
+        }
+    },
+);
 
 // Initial load
 loadNewFact();
@@ -105,6 +225,44 @@ loadNewFact();
     gap: 1rem;
 }
 
+.vote-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.vote-button.upvote {
+    color: #2ecc71;
+}
+
+.vote-button.upvote:hover,
+.vote-button.upvote.active {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.vote-button.downvote {
+    color: #e74c3c;
+}
+
+.vote-button.downvote:hover,
+.vote-button.downvote.active {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.vote-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .random-button {
     display: flex;
     align-items: center;
@@ -154,5 +312,14 @@ loadNewFact();
         flex-direction: column;
         gap: 1rem;
     }
+}
+.vote-button.upvote.active {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.vote-button.downvote.active {
+    background-color: #e74c3c;
+    color: white;
 }
 </style>
