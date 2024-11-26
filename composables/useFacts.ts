@@ -22,11 +22,13 @@ export const useFacts = () => {
   const getAllFacts = () => fetchWithError(`${baseURL}/facts`) || [];
 
   const getRandomFact = async () => {
-    const token = localStorage.getItem("auth_token");
     const headers: Record<string, string> = {};
 
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
+    if (process.client) {
+      const token = localStorage.getItem("auth_token");
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
     }
 
     return (
