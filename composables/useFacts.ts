@@ -38,25 +38,27 @@ export const useFacts = () => {
     );
   };
 
-  const voteFact = (id: number, voteType: "upvote" | "downvote") =>
-    fetchWithError(`${baseURL}/facts/${id}/${voteType}`, {
-      method: "POST",
-    });
+  const createFact = (factContent: string) => {
+    const headers: Record<string, string> = {};
 
-  const upvoteFact = (id: number) => voteFact(id, "upvote");
-  const downvoteFact = (id: number) => voteFact(id, "downvote");
+    if (process.client) {
+      const token = localStorage.getItem("auth_token");
+      if (!token) {
+        throw new Error("Authentication required to create a fact");
+      }
+      headers["Authorization"] = `Bearer ${token}`;
+    }
 
-  const createFact = (factContent: string) =>
-    fetchWithError(`${baseURL}/facts`, {
+    return fetchWithError(`${baseURL}/facts`, {
+      headers,
       method: "POST",
       body: { fact: factContent },
     });
+  };
 
   return {
     getAllFacts,
     getRandomFact,
-    upvoteFact,
-    downvoteFact,
     createFact,
   };
 };
