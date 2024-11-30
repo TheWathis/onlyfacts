@@ -66,7 +66,7 @@ async function handleSubmit() {
             throw new Error("Passwords do not match");
         }
         await auth.register(username.value, password.value);
-        router.push("/facts");
+        router.push("/");
     } catch (e) {
         error.value = e.message;
     } finally {

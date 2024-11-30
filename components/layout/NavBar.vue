@@ -8,22 +8,9 @@
             </div>
             <div class="nav-links">
                 <NuxtLink to="/" class="nav-link">Home</NuxtLink>
-                <!-- Only show Facts link if authenticated -->
-                <NuxtLink
-                    v-if="auth.state.isAuthenticated"
-                    to="/facts"
-                    class="nav-link"
-                >
-                    Facts
-                </NuxtLink>
-
                 <!-- Show either Login or Username + Logout -->
                 <template v-if="auth.state.isAuthenticated">
-                    <NuxtLink
-                        v-if="auth.state.isAuthenticated"
-                        to="/profile"
-                        class="nav-link"
-                    >
+                    <NuxtLink to="/profile" class="nav-link">
                         {{ auth.state.user?.username }}
                     </NuxtLink>
                     <button @click="handleLogout" class="logout-btn">

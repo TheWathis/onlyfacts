@@ -34,7 +34,7 @@ const router = useRouter();
 const activeTab = ref("login");
 
 const handleAuthSuccess = () => {
-    router.push("/facts");
+    router.push("/");
 };
 </script>
 

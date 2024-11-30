@@ -50,7 +50,7 @@ async function handleSubmit() {
 
     try {
         await auth.login(username.value, password.value);
-        await router.push("/facts");
+        await router.push("/");
     } catch (e) {
         error.value = e.message;
     } finally {

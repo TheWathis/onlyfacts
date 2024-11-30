@@ -1,10 +1,9 @@
 import jwt from "jsonwebtoken";
 import pool from "~/server/db";
-import { JWT_SECRET } from "../utils/auth";
+import { JWT_SECRET } from "~/server/utils/auth";
 
 export default defineEventHandler(async (event) => {
   try {
-    // Authenticate the user
     const authHeader = getHeader(event, "Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       throw createError({
@@ -17,26 +16,17 @@ export default defineEventHandler(async (event) => {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
     const userId = decoded.userId;
 
-    const body = await readBody(event);
-
-    if (!body.fact) {
-      throw createError({
-        statusCode: 400,
-        message: "Fact content is required",
-      });
-    }
-
     const result = await pool.query(
-      "INSERT INTO facts (fact, user_id) VALUES ($1, $2) RETURNING *",
-      [body.fact, userId],
+      "SELECT * FROM facts WHERE user_id = $1 ORDER BY created_at DESC",
+      [userId],
     );
 
-    return result.rows[0];
+    return result.rows;
   } catch (error: any) {
-    console.error("Database error:", error);
+    console.error("Error fetching user facts:", error);
     throw createError({
       statusCode: error.statusCode || 500,
-      message: error.message || "Error creating new fact",
+      message: error.message || "Error fetching user facts",
     });
   }
 });
