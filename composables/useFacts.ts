@@ -24,7 +24,7 @@ export const useFacts = () => {
   const getRandomFact = async () => {
     const headers: Record<string, string> = {};
 
-    if (process.client) {
+    if (import.meta.client) {
       const token = localStorage.getItem("auth_token");
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
@@ -41,7 +41,7 @@ export const useFacts = () => {
   const createFact = (factContent: string) => {
     const headers: Record<string, string> = {};
 
-    if (process.client) {
+    if (import.meta.client) {
       const token = localStorage.getItem("auth_token");
       if (!token) {
         throw new Error("Authentication required to create a fact");

@@ -36,26 +36,14 @@ const { createFact } = useFacts();
 const submitFact = async () => {
     if (!newFact.value.trim()) return;
 
-    try {
-        // const response = await fetch("/api/facts", {
-        //     method: "POST",
-        //     headers: {
-        //         "Content-Type": "application/json",
-        //     },
-        //     body: JSON.stringify({ fact: newFact.value.trim() }),
-        // });
-
-        createFact(newFact.value.trim());
-        newFact.value = "";
-
-        // if (response.ok) {
-        //     const result = await response.json();
-        //     emit("fact-added", result);
-        //     newFact.value = "";
-        // }
-    } catch (error) {
-        console.error("Error adding fact:", error);
-    }
+    createFact(newFact.value.trim())
+        .then((result) => {
+            emit("fact-added", result);
+            newFact.value = "";
+        })
+        .catch((error) => {
+            console.error("Error adding fact:", error);
+        });
 };
 </script>
 

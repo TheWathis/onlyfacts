@@ -7,7 +7,7 @@
                 </NuxtLink>
             </div>
 
-            <div class="nav-links">
+            <div v-if="!auth.state.isLoading" class="nav-links">
                 <NuxtLink
                     v-for="link in navigationLinks"
                     :key="link.path"

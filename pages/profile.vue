@@ -284,7 +284,6 @@ onMounted(async () => {
 
 .facts-container {
     max-width: 800px;
-    margin: 0 auto;
 }
 
 .add-fact-button-container {

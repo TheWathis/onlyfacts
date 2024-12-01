@@ -3,7 +3,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   const router = useRouter();
 
   // Only check auth on client side
-  if (process.client) {
+  if (import.meta.client) {
     router.beforeEach(async (to, from, next) => {
       const publicRoutes = [
         "/auth",

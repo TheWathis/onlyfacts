@@ -8,11 +8,13 @@ interface User {
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 const state = reactive<AuthState>({
   user: null,
   isAuthenticated: false,
+  isLoading: true,
 });
 
 export function useAuth() {
@@ -31,7 +33,7 @@ export function useAuth() {
 
       const { user, token } = await response.json();
 
-      if (process.client) {
+      if (import.meta.client) {
         localStorage.setItem("auth_token", token);
       }
 
@@ -60,7 +62,7 @@ export function useAuth() {
 
       const { user, token } = await response.json();
 
-      if (process.client) {
+      if (import.meta.client) {
         localStorage.setItem("auth_token", token);
       }
 
@@ -76,7 +78,7 @@ export function useAuth() {
 
   const checkAuth = async () => {
     // Only check localStorage if we're on client side
-    if (!process.client) {
+    if (!import.meta.client) {
       return false;
     }
 
@@ -85,10 +87,12 @@ export function useAuth() {
     if (!token) {
       state.user = null;
       state.isAuthenticated = false;
+      state.isLoading = false;
       return false;
     }
 
     try {
+      state.isLoading = true;
       const response = await fetch("/api/auth/me", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -107,11 +111,13 @@ export function useAuth() {
       console.error("Auth check error:", error);
       logout();
       return false;
+    } finally {
+      state.isLoading = false;
     }
   };
 
   const logout = () => {
-    if (process.client) {
+    if (import.meta.client) {
       localStorage.removeItem("auth_token");
     }
     state.user = null;
