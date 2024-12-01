@@ -15,7 +15,7 @@
                     class="nav-link"
                 >
                     <Icon v-if="link.icon" :name="link.icon" class="nav-icon" />
-                    {{ link.label }}
+                    <span class="link-label">{{ link.label }}</span>
                 </NuxtLink>
 
                 <span
@@ -150,6 +150,10 @@ const handleLogout = () => {
     color: #dc3545;
 }
 
+.link-label {
+    display: inline;
+}
+
 @media (max-width: 768px) {
     .nav-content {
         padding: 0 0.5rem;
@@ -165,6 +169,14 @@ const handleLogout = () => {
 
     .nav-link {
         font-size: 0.9rem;
+    }
+
+    .link-label {
+        display: none; /* Hide labels on mobile */
+    }
+
+    .nav-icon {
+        font-size: 1.5rem; /* Make icons slightly larger on mobile */
     }
 }
 </style>

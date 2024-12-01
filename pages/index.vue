@@ -3,12 +3,15 @@
         <div class="hero-section">
             <div class="fact-container" :class="{ loading: isLoading }">
                 <div class="fact-content">
-                    <span class="quote-mark">"</span>
-                    <p class="fact-text">{{ fact?.fact }}</p>
-                    <span class="quote-mark">"</span>
+                    <div class="quote-wrapper">
+                        <span class="quote-mark left">"</span>
+                        <p class="fact-text">
+                            {{ fact?.fact || "Loading a fact" }}
+                        </p>
+                        <span class="quote-mark right">"</span>
+                    </div>
                 </div>
                 <div class="fact-actions">
-                    <!-- Add vote buttons -->
                     <div class="vote-buttons" v-if="auth.state.isAuthenticated">
                         <button
                             @click="vote('upvote')"
@@ -156,6 +159,7 @@ loadNewFact();
 
 <style scoped>
 .home-container {
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 4rem;
@@ -171,7 +175,6 @@ loadNewFact();
 
 .fact-container {
     max-width: 800px;
-    width: 100%;
     text-align: center;
     transition: opacity 0.3s ease;
 }
@@ -183,6 +186,12 @@ loadNewFact();
 .fact-content {
     position: relative;
     margin-bottom: 2rem;
+    padding: 2rem;
+}
+
+.quote-wrapper {
+    position: relative;
+    display: inline-block; /* This will make it wrap around the content */
 }
 
 .quote-mark {
@@ -191,15 +200,16 @@ loadNewFact();
     opacity: 0.3;
     font-family: Georgia, serif;
     position: absolute;
+    line-height: 1;
 }
 
-.quote-mark:first-child {
-    top: -2rem;
+.quote-mark.left {
+    top: -1rem;
     left: -2rem;
 }
 
-.quote-mark:last-child {
-    bottom: -2rem;
+.quote-mark.right {
+    top: -1rem;
     right: -2rem;
 }
 
@@ -207,8 +217,9 @@ loadNewFact();
     font-size: 1.8rem;
     line-height: 1.5;
     color: #2c3e50;
-    margin: 2rem 0;
+    margin: 0;
     padding: 0 2rem;
+    position: relative;
 }
 
 .fact-actions {
@@ -288,9 +299,13 @@ loadNewFact();
 }
 
 @media (max-width: 768px) {
+    .fact-content {
+        padding: 1.5rem;
+    }
+
     .fact-text {
         font-size: 1.4rem;
-        padding: 0 1.5rem;
+        padding: unset;
     }
 
     .quote-mark {
@@ -298,27 +313,18 @@ loadNewFact();
     }
 
     .quote-mark:first-child {
-        top: -1.5rem;
-        left: -1rem;
+        top: -0.8rem;
+        left: -1.5rem;
     }
 
     .quote-mark:last-child {
-        bottom: -1.5rem;
-        right: -1rem;
+        top: -0.8rem;
+        right: -1.5rem;
     }
 
     .fact-actions {
         flex-direction: column;
         gap: 1rem;
     }
-}
-.vote-button.upvote.active {
-    background-color: #2ecc71;
-    color: white;
-}
-
-.vote-button.downvote.active {
-    background-color: #e74c3c;
-    color: white;
 }
 </style>

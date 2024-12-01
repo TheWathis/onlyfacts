@@ -339,6 +339,10 @@ onMounted(async () => {
 }
 
 @media (max-width: 768px) {
+    .profile-page {
+        padding: 1em 0;
+    }
+
     .stats-container {
         grid-template-columns: 1fr;
         gap: 2rem;

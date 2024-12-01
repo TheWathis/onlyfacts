@@ -43,13 +43,18 @@ main {
     display: flex;
     flex: 1;
     max-width: 1200px;
-    margin: 0 auto;
-    margin-top: 70px;
+    margin: 70px auto 0 auto;
 }
 
 footer {
     text-align: center;
     padding: 1rem;
     background: #f5f5f5;
+}
+
+@media (max-width: 768px) {
+    main {
+        margin: 70px 1em 0 1em;
+    }
 }
 </style>
