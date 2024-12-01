@@ -164,10 +164,9 @@ loadNewFact();
 
 .hero-section {
     display: flex;
+    flex: 1;
     justify-content: center;
     align-items: center;
-    min-height: 40vh;
-    padding: 2rem;
 }
 
 .fact-container {

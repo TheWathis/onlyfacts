@@ -1,13 +1,11 @@
 .auth-page {
     width: 100%;
-    min-height: 100vh;
+    min-width: 500px;
     padding: 2rem;
-    background-color: #f5f7fa;
 }
 
 .auth-container {
     width: 100%;
-    max-width: 400px;
     margin: 0 auto;
 }
 

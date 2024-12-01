@@ -40,11 +40,11 @@ html {
 }
 
 main {
+    display: flex;
     flex: 1;
     max-width: 1200px;
     margin: 0 auto;
-    padding: 2rem;
-    margin-top: 80px; /* Add this line to create space below the fixed navbar */
+    margin-top: 70px;
 }
 
 footer {
