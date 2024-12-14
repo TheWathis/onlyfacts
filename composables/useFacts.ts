@@ -1,6 +1,6 @@
 export const useFacts = () => {
   const config = useRuntimeConfig();
-  const baseURL = config.public.apiBase;
+  const baseURL = config.public.apiBaseUrl;
 
   const defaultErrorFact = {
     id: -1,

@@ -5,9 +5,17 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
   modules: ["@nuxt/icon"],
   runtimeConfig: {
-    jwtSecret: process.env.JWT_SECRET || "your-default-secret-key",
+    // Server-side environment variables
+    dbHost: "",
+    dbPort: "",
+    dbName: "",
+    dbUser: "",
+    dbPassword: "",
+    jwtSecret: "",
+
+    // Public variables
     public: {
-      apiBase: process.env.API_BASE_URL || "/api",
+      apiBaseUrl: "",
     },
   },
   plugins: ["~/plugins/auth.ts"],
