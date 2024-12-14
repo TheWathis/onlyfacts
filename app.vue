@@ -20,6 +20,17 @@ const auth = useAuth();
 // Only check auth on client side
 if (process.client) {
     onMounted(async () => {
+        const script = document.createElement("script");
+        script.async = true;
+        script.defer = true;
+        script.src = "https://umami.wathis.com/script.js";
+        script.setAttribute(
+            "data-website-id",
+            "5cfefc3c-09cf-4405-a1a5-3ff27b86d3fa",
+        );
+        document.head.appendChild(script);
+        document.title = "TheOnlyFacts";
+
         await auth.checkAuth();
     });
 }

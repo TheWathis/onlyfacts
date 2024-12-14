@@ -18,6 +18,7 @@
                             class="vote-button upvote"
                             :class="{ active: hasVoted === 'upvote' }"
                             :disabled="isVoting"
+                            data-umami-event="upvote-fact"
                         >
                             <Icon name="mdi:thumb-up" />
                             <span>{{ fact?.upvotes }}</span>
@@ -27,12 +28,17 @@
                             class="vote-button downvote"
                             :class="{ active: hasVoted === 'downvote' }"
                             :disabled="isVoting"
+                            data-umami-event="downvote-fact"
                         >
                             <Icon name="mdi:thumb-down" />
                             <span>{{ fact?.downvotes }}</span>
                         </button>
                     </div>
-                    <button class="random-button" @click="loadNewFact">
+                    <button
+                        class="random-button"
+                        @click="loadNewFact"
+                        data-umami-event="new-fact"
+                    >
                         Random Fact
                     </button>
                 </div>

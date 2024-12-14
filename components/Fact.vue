@@ -9,6 +9,7 @@
                     class="action-btn upvote"
                     :class="{ active: hasVoted === 'upvote' }"
                     :disabled="isVoting"
+                    data-umami-event="upvote-fact"
                 >
                     <Icon name="mdi:thumb-up" />
                     <span>{{ fact.upvotes }}</span>
@@ -18,6 +19,7 @@
                     class="action-btn downvote"
                     :class="{ active: hasVoted === 'downvote' }"
                     :disabled="isVoting"
+                    data-umami-event="downvote-fact"
                 >
                     <Icon name="mdi:thumb-down" />
                     <span>{{ fact.downvotes }}</span>
