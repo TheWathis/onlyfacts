@@ -56,9 +56,27 @@ export const useFacts = () => {
     });
   };
 
+  const deleteFact = async (factId: number) => {
+    const headers: Record<string, string> = {};
+
+    if (import.meta.client) {
+      const token = localStorage.getItem("auth_token");
+      if (!token) {
+        throw new Error("Authentication required to delete a fact");
+      }
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    return fetchWithError(`${baseURL}/facts/${factId}/delete`, {
+      headers,
+      method: "POST",
+    });
+  };
+
   return {
     getAllFacts,
     getRandomFact,
     createFact,
+    deleteFact,
   };
 };

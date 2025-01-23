@@ -24,6 +24,14 @@
                     <Icon name="mdi:thumb-down" />
                     <span>{{ fact.downvotes }}</span>
                 </button>
+                <button
+                    v-if="isOwner"
+                    @click="handleDelete"
+                    class="action-btn delete"
+                    data-umami-event="delete-fact"
+                >
+                    <Icon name="mdi:delete" />
+                </button>
             </div>
             <time :datetime="fact.created_at">{{
                 formatDate(fact.created_at)
@@ -33,8 +41,9 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useVoting } from "../composables/useVoting";
+import { useAuth } from "../composables/useAuth";
 
 const props = defineProps({
     fact: {
@@ -45,6 +54,8 @@ const props = defineProps({
 
 const fact = ref(props.fact);
 const { hasVoted, isVoting, handleVote } = useVoting(fact.value.id);
+const auth = useAuth();
+const isOwner = computed(() => auth.state.user?.id === fact.value.user_id);
 
 async function vote(voteType) {
     try {
@@ -64,6 +75,10 @@ function formatDate(dateString) {
         ),
         "day",
     );
+}
+
+function handleDelete() {
+    emit("delete-fact", fact.value.id);
 }
 </script>
 
@@ -123,6 +138,16 @@ function formatDate(dateString) {
 }
 
 .action-btn.downvote.active {
+    color: #e74c3c;
+}
+
+/* Delete button styles */
+.action-btn.delete {
+    color: #e74c3c;
+}
+
+.action-btn.delete:hover {
+    background-color: #f0f0f0;
     color: #e74c3c;
 }
 
