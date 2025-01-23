@@ -92,7 +92,7 @@
                 <div v-if="userFacts.length === 0" class="no-facts">
                     You haven't shared any facts yet.
                 </div>
-                <FactsList v-else :facts="userFacts" />
+                <FactsList v-else :facts="userFacts" @delete-fact="onFactDeleted" />
             </div>
         </div>
     </div>
@@ -101,8 +101,10 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useAuth } from "~/composables/useAuth";
+import { useFacts } from "~/composables/useFacts";
 
 const auth = useAuth();
+const { deleteFact } = useFacts();
 const activeTab = ref("stats");
 const isAddingFact = ref(false);
 
@@ -123,6 +125,17 @@ const onFactAdded = (newFact) => {
     isAddingFact.value = false;
     // Update stats
     stats.value.factsCreated++;
+};
+
+const onFactDeleted = async (factId) => {
+    try {
+        await deleteFact(factId);
+        userFacts.value = userFacts.value.filter(fact => fact.id !== factId);
+        // Update stats
+        stats.value.factsCreated--;
+    } catch (error) {
+        console.error("Error deleting fact:", error);
+    }
 };
 
 onMounted(async () => {
